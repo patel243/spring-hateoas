@@ -19,10 +19,17 @@ import static org.assertj.core.api.Assertions.*;
 
 import lombok.Value;
 
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.junit.jupiter.api.Test;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * @author Greg Turnquist
+ * @author Vedran Pavic
  */
 class IanaLinkRelationUnitTest {
 
@@ -31,7 +38,7 @@ class IanaLinkRelationUnitTest {
 	 */
 	@Test
 	void extractingValueOfIanaLinkRelationShouldWork() {
-		assertThat(IanaLinkRelations.ABOUT.value()).isEqualTo("about");
+		assertThat(IanaLinkRelations.ABOUT.value()).isEqualTo(IanaLinkRelations.ABOUT_VALUE);
 	}
 
 	/**
@@ -78,6 +85,32 @@ class IanaLinkRelationUnitTest {
 	}
 
 	/**
+	 * @see #1216
+	 */
+	@Test
+	void testAllIanaLinkRelationsHaveStringConstant() {
+
+		Set<String> linkRelations = Arrays.stream(IanaLinkRelations.class.getDeclaredFields()) //
+				.filter(ReflectionUtils::isPublicStaticFinal) //
+				.filter(field -> LinkRelation.class.equals(field.getType())) //
+				.map(it -> ReflectionUtils.getField(it, null)) //
+				.filter(Objects::nonNull) //
+				.map(LinkRelation.class::cast) //
+				.map(LinkRelation::value) //
+				.collect(Collectors.toSet());
+
+		Set<String> stringConstants = Arrays.stream(IanaLinkRelations.class.getDeclaredFields()) //
+				.filter(ReflectionUtils::isPublicStaticFinal) //
+				.filter(field -> String.class.equals(field.getType())) //
+				.map(it -> ReflectionUtils.getField(it, null)) //
+				.filter(Objects::nonNull) //
+				.map(String.class::cast) //
+				.collect(Collectors.toSet());
+
+		assertThat(linkRelations).containsExactlyElementsOf(stringConstants);
+	}
+
+	/**
 	 * Custom implementation of the {@link LinkRelation} interface.
 	 */
 	@Value
@@ -90,6 +123,5 @@ class IanaLinkRelationUnitTest {
 			return this.value;
 		}
 	}
-
 
 }

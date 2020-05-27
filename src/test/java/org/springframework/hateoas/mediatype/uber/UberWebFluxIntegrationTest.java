@@ -31,7 +31,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.config.EnableHypermediaSupport;
 import org.springframework.hateoas.config.EnableHypermediaSupport.HypermediaType;
-import org.springframework.hateoas.config.WebClientConfigurer;
+import org.springframework.hateoas.config.HypermediaWebTestClientConfigurer;
 import org.springframework.hateoas.support.WebFluxEmployeeController;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ContextConfiguration;
@@ -247,12 +247,8 @@ class UberWebFluxIntegrationTest {
 		}
 
 		@Bean
-		WebTestClient webTestClient(WebClientConfigurer webClientConfigurer, ApplicationContext ctx) {
-
-			return WebTestClient.bindToApplicationContext(ctx).build() //
-					.mutate() //
-					.exchangeStrategies(webClientConfigurer.hypermediaExchangeStrategies()) //
-					.build();
+		WebTestClient webTestClient(HypermediaWebTestClientConfigurer configurer, ApplicationContext ctx) {
+			return WebTestClient.bindToApplicationContext(ctx).build().mutateWith(configurer);
 		}
 	}
 }

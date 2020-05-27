@@ -23,7 +23,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import lombok.experimental.Wither;
+import lombok.With;
 
 import java.io.IOException;
 import java.net.URI;
@@ -333,7 +333,7 @@ class JacksonSerializationTest {
 	@Getter(onMethod = @__(@JsonProperty))
 	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 	@NoArgsConstructor(staticName = "empty", force = true)
-	@Wither
+	@With
 	private static class AccountProblemDetails {
 
 		int balance;

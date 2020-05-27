@@ -69,6 +69,8 @@ class ArchitectureTest {
 				.and().resideOutsideOfPackages("..reactive") //
 				.and().haveSimpleNameNotStartingWith("WebFlux") //
 				.and().haveSimpleNameNotStartingWith("WebClient") //
+				.and().haveSimpleNameNotStartingWith("HypermediaWebClient") //
+				.and().haveSimpleNameNotStartingWith("HypermediaWebTestClient") //
 				.should().dependOnClassesThat(areSpringFrameworkClassesWithReactiveDependency) //
 				.check(classes);
 	}

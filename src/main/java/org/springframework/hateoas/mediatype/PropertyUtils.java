@@ -55,6 +55,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 /**
  * @author Greg Turnquist
@@ -85,20 +86,7 @@ public class PropertyUtils {
 	}
 
 	public static Map<String, Object> extractPropertyValues(@Nullable Object object) {
-
-		if (object == null) {
-			return Collections.emptyMap();
-		}
-
-		if (EntityModel.class.isInstance(object)) {
-			return extractPropertyValues(EntityModel.class.cast(object).getContent());
-		}
-
-		BeanWrapper wrapper = PropertyAccessorFactory.forBeanPropertyAccess(object);
-
-		return getExposedProperties(object.getClass()).stream() //
-				.map(PropertyMetadata::getName)
-				.collect(HashMap::new, (map, name) -> map.put(name, wrapper.getPropertyValue(name)), HashMap::putAll);
+		return extractPropertyValues(object, true);
 	}
 
 	public static <T> T createObjectFromProperties(Class<T> clazz, Map<String, Object> properties) {
@@ -108,6 +96,7 @@ public class PropertyUtils {
 		properties.forEach((key, value) -> {
 			Optional.ofNullable(BeanUtils.getPropertyDescriptor(clazz, key)) //
 					.ifPresent(property -> {
+
 						try {
 
 							Method writeMethod = property.getWriteMethod();
@@ -115,7 +104,6 @@ public class PropertyUtils {
 							writeMethod.invoke(obj, value);
 
 						} catch (IllegalAccessException | InvocationTargetException e) {
-
 							throw new RuntimeException(e);
 						}
 					});
@@ -149,6 +137,53 @@ public class PropertyUtils {
 					? InputPayloadMetadata.NONE //
 					: new TypeBasedPayloadMetadata(domainType, lookupExposedProperties(resolved));
 		});
+	}
+
+	private static Map<String, Object> unwrapPropertyIfNeeded(String propertyName, BeanWrapper wrapper) {
+		Field descriptorField = ReflectionUtils.findField(wrapper.getWrappedClass(), propertyName);
+		Method readMethod = wrapper.getPropertyDescriptor(propertyName).getReadMethod();
+
+		MergedAnnotation<JsonUnwrapped> unwrappedAnnotation = Stream.of(descriptorField, readMethod)
+				.filter(Objects::nonNull).map(MergedAnnotations::from)
+				.flatMap(mergedAnnotations -> mergedAnnotations.stream(JsonUnwrapped.class))
+				.filter(it -> it.getBoolean("enabled")).findFirst().orElse(null);
+
+		Object propertyValue = wrapper.getPropertyValue(propertyName);
+
+		if (unwrappedAnnotation == null) {
+			return Collections.singletonMap(propertyName, propertyValue);
+		}
+
+		String prefix = unwrappedAnnotation.getString("prefix");
+		String suffix = unwrappedAnnotation.getString("suffix");
+
+		Map<String, Object> properties = new HashMap<>();
+
+		extractPropertyValues(propertyValue, true) //
+				.forEach((name, value) -> properties.put(prefix + name + suffix, value));
+
+		return properties;
+	}
+
+	private static Map<String, Object> extractPropertyValues(@Nullable Object object, boolean unwrapEligibleProperties) {
+
+		if (object == null) {
+			return Collections.emptyMap();
+		}
+
+		if (EntityModel.class.isInstance(object)) {
+			return extractPropertyValues(EntityModel.class.cast(object).getContent());
+		}
+
+		BeanWrapper wrapper = PropertyAccessorFactory.forBeanPropertyAccess(object);
+
+		return getExposedProperties(object.getClass()).stream() //
+				.map(PropertyMetadata::getName) //
+				.map(name -> unwrapEligibleProperties //
+						? unwrapPropertyIfNeeded(name, wrapper) //
+						: Collections.singletonMap(name, wrapper.getPropertyValue(name))) //
+				.flatMap(it -> it.entrySet().stream()) //
+				.collect(HashMap::new, (map, it) -> map.put(it.getKey(), it.getValue()), HashMap::putAll);
 	}
 
 	private static ResolvableType unwrapDomainType(ResolvableType type) {
@@ -457,7 +492,6 @@ public class PropertyUtils {
 		public int compareTo(DefaultPropertyMetadata that) {
 			return BY_NAME.compare(this, that);
 		}
-
 	}
 
 	/**

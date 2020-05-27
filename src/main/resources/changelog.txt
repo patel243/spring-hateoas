@@ -1,6 +1,46 @@
 Spring HATEOAS Changelog
 ========================
 
+Changes in version 1.1.0.RELEASE (2020-05-11)
+----------------------------------------
+- #1292 - Release 1.1.0.RELEASE.
+- #1280 - RepresentationModelProcessorInvoker incorrectly invokes generic processors.
+- #968 - @JsonUnwrapped ignored with (embedded) CollectionModel and HAL Forms.
+- #864 - Create a dedicated builder for HAL representations.
+- #270 - Sample for embedding HAL Resources of different types with root resource.
+- #193 - Support for Resources in a Resource to be added to _embedded.
+
+Changes in version 1.1.0.RC1 (2020-04-28)
+----------------------------------------
+- #1277 - Upgrade to Jackson 2.11.0.
+- #1275 - Align Naming for Kotlin Extension Functions with Spring.
+- #1270 - Add Kotlin source to released artifacts.
+- #1266 - Use JDK 14 for Java.next CI testing.
+- #1264 - Remove .factorypath.
+- #1255 - Introduce ability to alter classpath for test purposes.
+- #1252 - HypermediaWebTestClientConfigurer must not be registered if spring-test is not on the classpath.
+- #1250 - Start testing against Jackson 2.11.
+- #1247 - Update spring-doc-resources and highlight.
+- #1213 - Add support for Kotlin co-routines.
+-  #227 - Uri Template {?value*} does not generate templated:true.
+
+Changes in version 1.1.0.M3 (2020-03-31)
+----------------------------------------
+- #1246 - Upgrade to AssertJ 3.15.0.
+- #1245 - Upgrade to Kotlin 1.3.71.
+- #1241 - Additional factory methods for empty CollectionModel and PagedModel instances.
+- #1230 - Upgrade to Jackson 2.10.3.
+- #1229 - Upgrade to Reactor Dysprosium-SR6.
+- #1228 - Fix CI scripts to properly use maven caching.
+- #1227 - Upgrade to JUnit 5.6.1.
+- #1226 - Upgrade to Spring Framework 5.2.5.RELEASE.
+- #1225 - Provide implementation of WebTestClientConfigurer to support hypermedia.
+- #1224 - Provide API for users to easily configure WebClient.
+- #1223 - Provide API for users to easily configure RestTemplate.
+- #1216 - Consider providing String constants in IanaLinkRelations.
+- #1215 - Update RFC-5988 references to RFC-8288.
+- #1208 - Migrate from Lombok's @Wither to @With.
+
 Changes in version 1.1.0.M2 (2020-02-12)
 ----------------------------------------
 - #1205 - Fix nullability warnings in EntityModelProcessorWrapper.isValueTypeMatch(…).

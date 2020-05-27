@@ -33,7 +33,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.config.EnableHypermediaSupport;
 import org.springframework.hateoas.config.EnableHypermediaSupport.HypermediaType;
-import org.springframework.hateoas.config.WebClientConfigurer;
+import org.springframework.hateoas.config.HypermediaWebTestClientConfigurer;
 import org.springframework.hateoas.mediatype.problem.Problem;
 import org.springframework.hateoas.support.MappingUtils;
 import org.springframework.hateoas.support.WebFluxEmployeeController;
@@ -136,7 +136,8 @@ class HalFormsWebFluxIntegrationTest {
 	@Test // #786
 	void problemReturningControllerMethod() {
 
-		Problem problem = this.testClient.get().uri("http://localhost/employees/problem").accept(MediaTypes.HTTP_PROBLEM_DETAILS_JSON) //
+		Problem problem = this.testClient.get().uri("http://localhost/employees/problem")
+				.accept(MediaTypes.HTTP_PROBLEM_DETAILS_JSON) //
 				.exchange() //
 				.expectStatus().isBadRequest() //
 				.expectHeader().contentType(MediaTypes.HTTP_PROBLEM_DETAILS_JSON) //
@@ -161,10 +162,8 @@ class HalFormsWebFluxIntegrationTest {
 		}
 
 		@Bean
-		WebTestClient webTestClient(WebClientConfigurer webClientConfigurer, ApplicationContext ctx) {
-
-			return WebTestClient.bindToApplicationContext(ctx).build().mutate()
-					.exchangeStrategies(webClientConfigurer.hypermediaExchangeStrategies()).build();
+		WebTestClient webTestClient(HypermediaWebTestClientConfigurer configurer, ApplicationContext ctx) {
+			return WebTestClient.bindToApplicationContext(ctx).build().mutateWith(configurer);
 		}
 	}
 }

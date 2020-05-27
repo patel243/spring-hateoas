@@ -67,6 +67,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.lang.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.jayway.jsonpath.JsonPath;
@@ -516,6 +517,17 @@ class Jackson2HalFormsIntegrationTest extends AbstractJackson2MarshallingIntegra
 		assertValueForPath(model, "$._templates.default.properties[0].required", true);
 	}
 
+	@Test // #968
+	void considerJsonUnwrapped() throws Exception {
+
+		UnwrappedExample unwrappedExample = new UnwrappedExample();
+
+		unwrappedExample.element = new UnwrappedExampleElement();
+		unwrappedExample.element.firstname = "john";
+
+		assertValueForPath(unwrappedExample, "$.firstname", "john");
+	}
+
 	private void assertThatPathDoesNotExist(Object toMarshall, String path) throws Exception {
 
 		ObjectMapper mapper = getCuriedObjectMapper();
@@ -620,5 +632,19 @@ class Jackson2HalFormsIntegrationTest extends AbstractJackson2MarshallingIntegra
 		public String getFirstname() {
 			return firstname;
 		}
+	}
+
+	public static class UnwrappedExample extends RepresentationModel<UnwrappedExample> {
+
+		private UnwrappedExampleElement element;
+
+		@JsonUnwrapped
+		public UnwrappedExampleElement getElement() {
+			return element;
+		}
+	}
+
+	public static class UnwrappedExampleElement {
+		private @Getter String firstname;
 	}
 }
